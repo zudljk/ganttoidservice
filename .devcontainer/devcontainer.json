@@ -1,0 +1,33 @@
+{
+	"name": "Python 3",
+	"image": "mcr.microsoft.com/devcontainers/python:0-3.11",
+
+	// Features to add to the dev container. More info: https://containers.dev/features.
+	"features": {
+        "Git"
+    },
+
+
+	"customizations": {
+		"vscode": {
+			"settings": {},
+			"extensions": [
+				"streetsidesoftware.code-spell-checker"
+			]
+		}
+	},
+	
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	// "forwardPorts": [9000],
+
+	// Use 'portsAttributes' to set default properties for specific forwarded ports. 
+	// More info: https://containers.dev/implementors/json_reference/#port-attributes
+	"portsAttributes": {
+		"8000": {
+			"label": "Gunicorn",
+			"onAutoForward": "notify"
+		}
+	},
+
+	"postStartCommand": "pip install -r requirements.txt"
+}

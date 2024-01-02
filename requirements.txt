@@ -1,0 +1,6 @@
+Flask
+Flask-OAuthlib
+requests
+jsonify
+ganttoid @ git+https://github.com/zudljk/ganttoid.git
+gunicorn
