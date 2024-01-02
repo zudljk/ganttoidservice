@@ -1,0 +1,53 @@
+- name: Install Docker on Ubuntu
+  hosts: "{{target_host}}"
+  become: yes
+  become_method: sudo
+
+  tasks:
+  - name: Update apt package cache
+    apt:
+      update_cache: yes
+      cache_valid_time: 3600
+
+  - name: Install required packages for Docker
+    apt:
+      name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg
+      - lsb-release
+      state: present
+
+  - name: Add Docker GPG key
+    apt_key:
+      url: https://download.docker.com/linux/ubuntu/gpg
+      state: present
+
+  - name: Add Docker APT repository
+    apt_repository:
+      repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
+      state: present
+
+  - name: Update apt package cache (again after adding Docker repository)
+    apt:
+      update_cache: yes
+      cache_valid_time: 3600
+
+  - name: Install Docker
+    apt:
+      name: docker-ce
+      state: present
+
+  - name: Ensure Docker service is running
+    service:
+      name: docker
+      state: started
+      enabled: yes
+
+  - name: Add Paperspace user to Docker group
+    ansible.builtin.user:
+      name: paperspace
+      groups:
+        - docker
+      append: true
