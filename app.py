@@ -6,11 +6,11 @@ from ganttoid import ganttoid
 
 
 # Replace these values with your OAuth provider's configuration
-CLIENT_ID = 'your_client_id'
-CLIENT_SECRET = 'your_client_secret'
-AUTHORIZATION_URL = 'https://app.clickup.com/api?client_id={client_id}&redirect_uri={redirect_uri}'
+CLIENT_ID = '49BSSGGQ1EDAOHUMRUP5AMLW63KZ9071'
+CLIENT_SECRET = '33PF3HK4F51VMPYODPILU0LSUKUZHS2CV9P4K984E9AZ8B3KZRIMOHVX97RMHYHD'
+AUTHORIZATION_URL = 'https://app.clickup.com/api'
 TOKEN_URL = 'https://api.clickup.com/api/v2/oauth/token'
-REDIRECT_URI = 'http://localhost:5000/oauth_callback'  # Update with your redirect URI
+REDIRECT_URI = 'http://alpheratz.zudljk.dynv6.net/oauth_callback'  # Update with your redirect URI
 
 app = Flask(__name__)
 
@@ -36,7 +36,7 @@ def initialize_database():
     cursor = conn.cursor()
     
     # Create a table if it doesn't exist
-    cursor.execute('''
+    cursor.executescript('''
         CREATE TABLE IF NOT EXISTS client (webhook_id TEXT, token TEXT);
         CREATE TABLE IF NOT EXISTS oauth2_config (client_id TEXT, client_secret TEXT);
     ''')
@@ -108,6 +108,8 @@ def oauth_callback():
     # Handle the authenticated user data received in 'response'
     # Example: access_token = response['access_token']
     # Perform actions like storing user info in session or database
+    access_token = response['access_token']
+    #store_api_key(None, )
     
     # Redirect to a success page or profile page after successful authentication
     return redirect(url_for('success'))
@@ -120,4 +122,4 @@ def success():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host="0.0.0.0", port=8000)

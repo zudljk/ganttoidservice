@@ -4,3 +4,4 @@ requests
 jsonify
 ganttoid @ git+https://github.com/zudljk/ganttoid.git
 gunicorn
+Werkzeug==2.2.2
