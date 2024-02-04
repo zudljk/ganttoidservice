@@ -3,6 +3,7 @@ from flask import Flask, request, Response, redirect, url_for, session
 from flask_oauthlib.client import OAuth
 
 from ganttoid import ganttoid
+from db import read_from_db, update_to_db, write_to_db, init_db
 
 
 # Replace these values with your OAuth provider's configuration
@@ -30,25 +31,10 @@ oauth_provider = oauth.remote_app(
     authorize_url=AUTHORIZATION_URL
 )
 
-# TBD
-def initialize_database():
-    conn = sqlite3.connect('example.db')
-    cursor = conn.cursor()
-    
-    # Create a table if it doesn't exist
-    cursor.executescript('''
-        CREATE TABLE IF NOT EXISTS client (webhook_id TEXT, token TEXT);
-        CREATE TABLE IF NOT EXISTS oauth2_config (client_id TEXT, client_secret TEXT);
-    ''')
-    
-    conn.commit()
-    conn.close()
 
+def get_api_key(webhook_id):
+    return read_from_db(app, 'client', 'token', 'webhook_id', webhook_id)
 
-def get_api_key(con, webhook_id):
-    cur = con.cursor()
-    return cur.execute("SELECT token FROM client WHERE webhook_id = :webhook_id", { webhook_id: webhook_id }).fetchone()
-        
 
 def store_api_key(con, webhook_id, token):
     cur = con.cursor()
@@ -59,17 +45,43 @@ def store_api_key(con, webhook_id, token):
     cur.commit()
     
 
-def create_webhook(con, api_key):
+def create_webhook(client_id, team_id):
     # TBD, use webhooks endpoint to create one, use the api_key as authorization header
     webhook_id = None # TBD get from response
+    update_to_db(app, 'client_data', { 'webhook_id': webhook_id }, 'client_id', client_id)
     store_api_key(con, webhook_id, api_key) 
+
+
+@app.teardown_appcontext
+def close_connection(exception):
+    db = getattr(app, '_database', None)
+    if db is not None:
+        db.close()
+
+
+@app.route('/save-credentials', methods=['POST'])
+def save_credentials():
+    data = request.get_json()
+
+    if 'client_id' not in data or 'client_secret' not in data:
+        return jsonify({'error': 'Invalid JSON data'}), 400
+
+    client_id = data['client_id']
+    client_secret = data['client_secret']
+
+    # Save data to SQLite database
+    write_to_db(app, 'client_data', ["client_id", "client_secret"], [client_id, client_secret])
+    
+    create_webhook(client_id)
+    
+    return jsonify({'message': 'Credentials saved successfully'}), 201
 
 
 # TBD
 @app.before_first_request
 def before_first_request():
-    initialize_database()
-
+    init_db(app)    
+    
 
 @app.route('/clickup-webhook', methods=['POST'])
 def clickup_webhook():
